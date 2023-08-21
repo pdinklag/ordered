@@ -34,7 +34,7 @@
 #include <type_traits>
 
 #include "internal/concepts.hpp"
-#include "key_value_result.hpp"
+#include "query_result.hpp"
 
 namespace btree {
 
@@ -488,7 +488,7 @@ public:
      * \param x the key in question
      * \return the query result
      */
-    inline KeyValueResult<Key, Value> predecessor(Key const x) const {
+    inline QueryResult<Key, Value> predecessor(Key const x) const {
         Node* node = root_;
         
         bool exists = false;
@@ -528,7 +528,7 @@ public:
      * \param x the key in question
      * \return the query result
      */
-    inline KeyValueResult<Key, Value> successor(Key const x) const {
+    inline QueryResult<Key, Value> successor(Key const x) const {
         Node* node = root_;
         
         bool exists = false;
@@ -566,10 +566,10 @@ public:
      * \param x the key in question
      * \return the query result
      */
-    inline KeyValueResult<Key, Value> find(Key const x) const {
-        if(size() == 0) [[unlikely]] return KeyValueResult<Key, Value>::none();
+    inline QueryResult<Key, Value> find(Key const x) const {
+        if(size() == 0) [[unlikely]] return QueryResult<Key, Value>::none();
         auto r = predecessor(x);
-        return (r.exists && r.key == x) ? r : KeyValueResult<Key, Value>::none();
+        return (r.exists && r.key == x) ? r : QueryResult<Key, Value>::none();
     }
 
     /**

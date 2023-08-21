@@ -31,19 +31,19 @@
 namespace btree {
 
 /**
- * \brief The result of a predecessor or successor search
+ * \brief The result of a search query
  * 
  * \tparam Key the key type
  * \tparam Value the value type
  */
 template<typename Key, typename Value>
-struct KeyValueResult {
+struct QueryResult {
     /**
      * \brief Produces a negative query result
      * 
      * \return a negative query result 
      */
-    inline static KeyValueResult none() { return { false, Key(), Value() }; }
+    inline static QueryResult none() { return { false, Key(), Value() }; }
 
     /**
      * \brief Tells whether or not the predecessor or successor exists
