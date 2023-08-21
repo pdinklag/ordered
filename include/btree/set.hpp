@@ -29,7 +29,7 @@
 #define _BTREE_SET_HPP
 
 #include "btree/btree_impl.hpp"
-#include "btree/internal/sorted_node_ls_set.hpp"
+#include "btree/internal/linear_search_set.hpp"
 
 namespace btree {
 
