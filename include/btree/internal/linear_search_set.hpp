@@ -43,15 +43,12 @@ namespace btree::internal {
  */
 template<std::totally_ordered Key_, size_t capacity_>
 class LinearSearchSet : public LinearSearchBase<Key_, capacity_> {
-private:
-    using Base = LinearSearchBase<Key_, capacity_>;
-
 public:
     static constexpr size_t capacity() { return capacity_; }
     using Key = Key_;
     struct Value{};
 
-    LinearSearchSet(): Base(0) {
+    LinearSearchSet() {
     }
 
     LinearSearchSet(const LinearSearchSet&) = default;
@@ -65,20 +62,20 @@ public:
     }
 
     inline void insert(Key const key) {
-        insert_key(key);
+        this->insert_key(key);
     }
 
     inline void insert(Key const key, Value const value) {
-        insert_key(key);
+        this->insert_key(key);
     }
 
     inline bool erase(Key const key, Value& value) {
-        return erase(key);
+        return this->erase(key);
     }
 
     inline bool erase(Key const key) {
         size_t discard;
-        return erase_key(key, discard);
+        return this->erase_key(key, discard);
     }
 } __attribute__((__packed__));
 

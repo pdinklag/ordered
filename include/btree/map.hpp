@@ -43,7 +43,7 @@ namespace btree {
  * \tparam degree the B-tree node degree
  */
 template<std::totally_ordered Key, typename Value, size_t degree = 65>
-using Map = BTreeImpl<internal::LinearSearchMap<Key, Value, degree - 1>>;
+using Map = BTree<internal::LinearSearchMap<Key, Value, degree - 1>>;
 
 }
 

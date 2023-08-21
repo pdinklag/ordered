@@ -65,6 +65,7 @@ protected:
         keys_[i] = key;
 
         ++size_;
+        return i;
     }
 
     inline bool erase_key(Key const key, size_t& pos) {

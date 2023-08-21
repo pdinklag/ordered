@@ -28,7 +28,7 @@
 #ifndef _BTREE_HPP
 #define _BTREE_HPP
 
-#include "btree/map.hpp"
 #include "btree/set.hpp"
+#include "btree/map.hpp"
 
 #endif

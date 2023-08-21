@@ -42,7 +42,7 @@ namespace btree {
  * \tparam degree the B-tree node degree
  */
 template<std::totally_ordered Key, size_t degree = 65>
-using Set = BTreeImpl<internal::LinearSearchSet<Key, degree - 1>>;
+using Set = BTree<internal::LinearSearchSet<Key, degree - 1>>;
 
 }
 

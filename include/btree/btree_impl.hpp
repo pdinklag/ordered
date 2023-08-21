@@ -28,14 +28,15 @@
 #ifndef _BTREE_IMPL_HPP
 #define _BTREE_IMPL_HPP
 
-#include <iterator>
+#include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <type_traits>
 
 #include "internal/concepts.hpp"
 #include "key_value_result.hpp"
 
-namespace btree::internal {
+namespace btree {
 
 /**
  * \brief A B-tree
@@ -560,6 +561,18 @@ public:
     }
 
     /**
+     * \brief Finds the given key in the B-tree
+     * 
+     * \param x the key in question
+     * \return the query result
+     */
+    inline KeyValueResult<Key, Value> find(Key const x) const {
+        if(size() == 0) [[unlikely]] return KeyValueResult<Key, Value>::none();
+        auto r = predecessor(x);
+        return (r.exists && r.key == x) ? r : KeyValueResult<Key, Value>::none();
+    }
+
+    /**
      * \brief Tests whether the given key is contained in the B-tree
      * 
      * \param x the key in question
@@ -567,9 +580,8 @@ public:
      * \return false otherwise
      */
     inline bool contains(Key const x) const {
-        if(size() == 0) [[unlikely]] return false;
-        auto r = predecessor(x);
-        return r.exists && r.key == x;
+        auto const r = find(x);
+        return r.exists;
     }
 
     /**
@@ -645,7 +657,7 @@ public:
     inline bool erase(Key const key) {
         assert(size_ > 0);
         
-        bool const result = root_->remove(key);
+        bool const result = root_->erase(key);
         
         if(result) {
             --size_;

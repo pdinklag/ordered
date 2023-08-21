@@ -46,9 +46,6 @@ namespace btree::internal {
  */
 template<std::totally_ordered Key_, typename Value_, size_t capacity_>
 class LinearSearchMap : public LinearSearchBase<Key_, capacity_> {
-private:
-    using Base = LinearSearchBase<Key_, capacity_>;
-
 public:
     static constexpr size_t capacity() { return capacity_; }
     using Key = Key_;
@@ -58,7 +55,7 @@ private:
     Value values_[capacity_];
 
 public:
-    LinearSearchMap(): Base(0) {
+    LinearSearchMap() {
     }
 
     LinearSearchMap(const LinearSearchMap&) = default;
@@ -72,8 +69,8 @@ public:
     }
 
     inline void insert(Key const key, Value const value) {
-        auto const old_size = Base::size();
-        auto const i = insert_key(key);
+        auto const old_size = this->size();
+        auto const i = this->insert_key(key);
 
         for(size_t j = old_size; j > i; j--) values_[j] = values_[j-1];
         values_[i] = value;
@@ -81,8 +78,8 @@ public:
 
     inline bool erase(Key const key, Value& value) {
         size_t i;
-        if(erase_key(key, i)) {
-            auto const new_size = Base::size();
+        if(this->erase_key(key, i)) {
+            auto const new_size = this->size();
             value = values_[i];
             for(size_t j = i; j < new_size; j++) values_[j] = values_[j+1];
             return true;
@@ -92,8 +89,8 @@ public:
     }
 
     inline bool erase(Key const key) {
-        size_t discard;
-        return erase_key(key, discard);
+        Value discard;
+        return erase(key, discard);
     }
 } __attribute__((__packed__));
 
