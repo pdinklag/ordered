@@ -1,6 +1,6 @@
 /**
- * btree/internal/linear_search_set.hpp
- * part of pdinklag/btree
+ * ordered/btree/internal/linear_search_set.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,12 +25,12 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_INTERNAL_LINEAR_SEARCH_SET_HPP
-#define _BTREE_INTERNAL_LINEAR_SEARCH_SET_HPP
+#ifndef _ORDERED_BTREE_INTERNAL_LINEAR_SEARCH_SET_HPP
+#define _ORDERED_BTREE_INTERNAL_LINEAR_SEARCH_SET_HPP
 
 #include "linear_search_base.hpp"
 
-namespace btree::internal {
+namespace ordered::btree::internal {
 
 /**
  * \brief B-tree node implementation that stores keys naively in a sorted array

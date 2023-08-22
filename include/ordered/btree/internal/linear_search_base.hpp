@@ -1,6 +1,6 @@
 /**
- * btree/internal/linear_search_base.hpp
- * part of pdinklag/btree
+ * ordered/btree/internal/linear_search_base.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,8 +25,8 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_INTERNAL_LINEAR_SEARCH_BASE_HPP
-#define _BTREE_INTERNAL_LINEAR_SEARCH_BASE_HPP
+#ifndef _ORDERED_BTREE_INTERNAL_LINEAR_SEARCH_BASE_HPP
+#define _ORDERED_BTREE_INTERNAL_LINEAR_SEARCH_BASE_HPP
 
 #include <cassert>
 #include <concepts>
@@ -34,9 +34,9 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "pos_result.hpp"
+#include "../../internal/local_query_result.hpp"
 
-namespace btree::internal {
+namespace ordered::btree::internal {
 
 /**
  * \brief Base for B-tree node implementations that store keys naively in a sorted array
@@ -96,7 +96,7 @@ public:
         return keys_[i];
     }
 
-    inline PosResult predecessor(Key const x) const {
+    inline ordered::internal::LocalQueryResult predecessor(Key const x) const {
         if(size_ == 0) [[unlikely]] return { false, 0 };
         if(x < keys_[0]) [[unlikely]] return { false, 0 };
         if(x >= keys_[size_-1]) [[unlikely]] return { true, size_ - 1ULL };
@@ -106,7 +106,7 @@ public:
         return { true, i-1 };
     }
 
-    inline PosResult successor(Key const x) const {
+    inline ordered::internal::LocalQueryResult successor(Key const x) const {
         if(size_ == 0) [[unlikely]] return { false, 0 };
         if(x <= keys_[0]) [[unlikely]] return { true, 0 };
         if(x > keys_[size_-1]) [[unlikely]] return { false, 0 };

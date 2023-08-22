@@ -1,6 +1,6 @@
 /**
- * btree/map.hpp
- * part of pdinklag/btree
+ * ordered/btree/map.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,13 +25,13 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_MAP_HPP
-#define _BTREE_MAP_HPP
+#ifndef _ORDERED_BTREE_MAP_HPP
+#define _ORDERED_BTREE_MAP_HPP
 
-#include "btree/btree_impl.hpp"
-#include "btree/internal/linear_search_map.hpp"
+#include "internal/impl.hpp"
+#include "internal/linear_search_map.hpp"
 
-namespace btree {
+namespace ordered::btree {
 
 /**
  * \brief An associative B-tree
@@ -43,7 +43,7 @@ namespace btree {
  * \tparam degree the B-tree node degree
  */
 template<std::totally_ordered Key, typename Value, size_t degree = 65>
-using Map = BTree<internal::LinearSearchMap<Key, Value, degree - 1>>;
+using Map = internal::BTree<internal::LinearSearchMap<Key, Value, degree - 1>>;
 
 }
 

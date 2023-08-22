@@ -1,6 +1,6 @@
 /**
- * btree.hpp
- * part of pdinklag/btree
+ * ordered/internal/local_query_result.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,10 +25,38 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_HPP
-#define _BTREE_HPP
+#ifndef _ORDERED_INTERNAL_LOCAL_QUERY_RESULT_HPP
+#define _ORDERED_INTERNAL_LOCAL_QUERY_RESULT_HPP
 
-#include "btree/set.hpp"
-#include "btree/map.hpp"
+#include <cstddef>
+
+namespace ordered::internal {
+
+/**
+ * \brief The result of a node- or bucket-local query
+ */
+struct LocalQueryResult {
+    /**
+     * \brief Produces a negative query result
+     * 
+     * \return a negative query result 
+     */
+    inline static LocalQueryResult none() { return { false, 0 }; }
+
+    /**
+     * \brief Tells whether or not a query result exists
+     */
+    bool exists;
+
+    /**
+     * \brief The position of the query result if it exists, undefined otherwise
+     */
+    size_t pos;
+
+    inline operator bool() const { return exists; }
+    inline operator size_t() const { return pos; }
+};
+
+}
 
 #endif

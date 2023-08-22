@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1 FATAL_ERROR)
-project(btree)
+project(ordered)
 
 # set C++ build flags
 set(CXX_STANDARD c++20)
@@ -8,8 +8,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb")
 
 # create interface library
-add_library(btree INTERFACE)
-target_include_directories(btree INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_library(ordered INTERFACE)
+target_include_directories(ordered INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # provide tests and benchmark if standalone
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)

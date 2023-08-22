@@ -1,6 +1,6 @@
 /**
- * btree/set.hpp
- * part of pdinklag/btree
+ * ordered/query_result.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,24 +25,46 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_SET_HPP
-#define _BTREE_SET_HPP
+#ifndef _ORDERED_QUERY_RESULT_HPP
+#define _ORDERED_QUERY_RESULT_HPP
 
-#include "btree/btree_impl.hpp"
-#include "btree/internal/linear_search_set.hpp"
-
-namespace btree {
+namespace ordered {
 
 /**
- * \brief A B-tree
- * 
- * The degree must be an odd number.
+ * \brief The result of a search query
  * 
  * \tparam Key the key type
- * \tparam degree the B-tree node degree
+ * \tparam Value the value type
  */
-template<std::totally_ordered Key, size_t degree = 65>
-using Set = BTree<internal::LinearSearchSet<Key, degree - 1>>;
+template<typename Key, typename Value>
+struct QueryResult {
+    /**
+     * \brief Produces a negative query result
+     * 
+     * \return a negative query result 
+     */
+    inline static QueryResult none() { return { false, Key(), Value() }; }
+
+    /**
+     * \brief Tells whether or not the predecessor or successor exists
+     */
+    bool exists;
+
+    /**
+     * \brief The predecessor or successor if it exists, undefined otherwise
+     */
+    Key key;
+
+    /**
+     * \brief The value associated with the predecessor or successor if it exists, undefined otherwise
+     * 
+     * The value type depends on the node implementation.
+     * For data structures that represent a set (only storing keys and no values), this may be a dummy.
+     */
+    Value value;
+
+    inline operator bool() const { return exists; }
+};
 
 }
 

@@ -1,6 +1,6 @@
 /**
- * btree/btree_impl.hpp
- * part of pdinklag/btree
+ * ordered/btree/internal/impl.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,18 +25,18 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_IMPL_HPP
-#define _BTREE_IMPL_HPP
+#ifndef _ORDERED_BTREE_INTERNAL_IMPL_HPP
+#define _ORDERED_BTREE_INTERNAL_IMPL_HPP
 
 #include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 
-#include "internal/concepts.hpp"
-#include "query_result.hpp"
+#include "concepts.hpp"
+#include "../../query_result.hpp"
 
-namespace btree {
+namespace ordered::btree::internal {
 
 /**
  * \brief A B-tree

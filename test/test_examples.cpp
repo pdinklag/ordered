@@ -28,12 +28,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 
-#include <btree.hpp>
+#include <ordered/btree.hpp>
 
-namespace btree::test {
+namespace ordered::test {
 
-TEST_SUITE("btree") {
-    TEST_CASE("set") {
+TEST_SUITE("ordered") {
+    TEST_CASE("btree::Set") {
         // initialize an empty tree
         btree::Set<int> tree;
         CHECK(tree.empty());

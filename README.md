@@ -1,14 +1,8 @@
-# B-tree
+# Ordered Sets
 
-This repository provides a straightforward C++20 header-only implementation of plain old B-trees with no tricks or magic.
+This repository provides a straightforward C++20 header-only implementations of selected ordered set data structures.
 
-Let *B* be the degree of the nodes in the B-tree. The implementation supports insertion and removal operations, as well as minimum, maximum, membership, predecessor and successor queries in base-*B* logarithmic time in the number of contained keys plus node-level scans.
-
-I authored the SEA 2021 paper [Engineering Predecessor Data Structures for Dynamic Integer Sets](https://arxiv.org/abs/2104.06740), where a previous version of this implementation was benchmarked against different data structures. One key takeaway from those experiments was that a common B-tree is competitive in almost every aspect and using more sophisticated or specialized data structures is rarely a necessity. In other words, this B-tree is very fast in the average case.
-
-The implementation is very simple, almost naïve: the maintenance of the B-tree structure is implemented according to Gonazlo Navarro's book [Compact Data Structures](https://users.dcc.uchile.cl/~gnavarro/CDSbook/). The data structure for nodes is a simple array of keys which are maintained in ascending order using simple linear-time queries and manipulation. Since nodes are kept small (think a B-tree of degree 65, storing up to 64 keys at each node), thanks to caching, this is extremely fast on modern hardware and can easily outperform much more sophisticated approaches (such as fusion or burst) in the general case. Despite the simple algorithms, the code has been engineered such that it is competitive with other data structures across the board. Because B-trees are cardinality-reducing, their memory consumption depends only on the contained number of keys and not the size of the universe these keys are drawn from.
-
-The B-tree comes as an ordered set as well as an ordered map (associative B-tree). It only supports unique keys; multiple insertions of the same key leads to undefined behaviour.
+I co-authored the SEA 2021 paper [Engineering Predecessor Data Structures for Dynamic Integer Sets](https://arxiv.org/abs/2104.06740), where previous versions of these implementations were benchmarked against different data structures, all being competitive.
 
 ### Requirements
 
@@ -60,18 +54,26 @@ The library is header only, so all you need to do is make sure it's in your incl
 In case you use CMake, you can embed this repository into yours (e.g., as a git submodule) and add it like so:
 
 ```cmake
-add_subdirectory(path/to/btree)
+add_subdirectory(path/to/ordered)
 ```
 
-You can then link against the `btree` interface library, which will automatically add the include directory to your target.
+You can then link against the `ordered` interface library, which will automatically add the include directory to your target.
 
-### Ordered Set (classic B-tree)
+### B-trees
+
+This is an implementation of plain old B-trees with no tricks or magic. Let *B* be the degree of the nodes in the B-tree. The implementation supports insertion and removal operations, as well as minimum, maximum, membership, predecessor and successor queries in base-*B* logarithmic time in the number of contained keys plus node-level scans.
+
+The implementation is very simple, almost naïve: the maintenance of the B-tree structure is implemented according to Gonazlo Navarro's book [Compact Data Structures](https://users.dcc.uchile.cl/~gnavarro/CDSbook/). The data structure for nodes is a simple array of keys which are maintained in ascending order using simple linear-time queries and manipulation. Since nodes are kept small (think a B-tree of degree 65, storing up to 64 keys at each node), thanks to caching, this is extremely fast on modern hardware and can easily outperform much more sophisticated approaches (such as fusion or burst) in the general case. Despite the simple algorithms, the code has been engineered such that it is competitive with other data structures across the board. Because B-trees are cardinality-reducing, their memory consumption depends only on the contained number of keys and not the size of the universe these keys are drawn from.
+
+The B-tree comes as an ordered set as well as an ordered map (associative B-tree). It only supports unique keys; multiple insertions of the same key leads to undefined behaviour.
+
+#### Ordered Set (classic B-tree)
 
 The alias `btree::Set<Key>` gives you the classic B-tree experience for keys of type `Key`. The only requirement for `Key` is that it must satisfy the `std::totally_ordered` concept.
 
 Note that even though no values are associated with keys here, you will get a [QueryResult](#QueryResult) when performing predecessor or successor queries. This is simply for convenience of keeping the code succinct; the `value` field in these results is not meaningful and can simply be ignored.
 
-#### Example
+##### Example
 
 The following excerpt from the tests should tell you all you need to know about the usage.
 
@@ -126,11 +128,11 @@ CHECK(!tree.contains(13));
 { auto const r = tree.successor(99); CHECK(!r.exists); }
 ```
 
-### Ordered Map (associative B-tree)
+#### Ordered Map (associative B-tree)
 
 The associative variant `btree::Map` works just like `btree::Set`, except you associate values to each key upon insertion and the [QueryResult](#QueryResult) returned by predecessor and successor queries also contain the corresponding value. This is particularly useful when using `find`, which can be used to lookup the value associated to a key.
 
-#### Example
+##### Example
 
 The following excerpt from the tests should tell you all you need to know about the usage.
 

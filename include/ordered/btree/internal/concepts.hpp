@@ -1,6 +1,6 @@
 /**
- * btree/internal/concepts.hpp
- * part of pdinklag/btree
+ * ordered/btree/internal/concepts.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,14 +25,14 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_INTERNAL_CONCEPTS_HPP
-#define _BTREE_INTERNAL_CONCEPTS_HPP
+#ifndef _ORDERED_BTREE_INTERNAL_CONCEPTS_HPP
+#define _ORDERED_BTREE_INTERNAL_CONCEPTS_HPP
 
 #include <concepts>
 
-#include "pos_result.hpp"
+#include "../../internal/local_query_result.hpp"
 
-namespace btree::internal {
+namespace ordered::btree::internal {
 
 /**
  * \brief Concept for types that provide a B-Tree node implementation
@@ -57,8 +57,8 @@ concept NodeImplementation =
         { impl.erase(key) } -> std::same_as<bool>;
     }
     && requires(T const& impl, typename T::Key const key) {
-        { impl.predecessor(key) } -> std::same_as<PosResult>;
-        { impl.successor(key) } -> std::same_as<PosResult>;
+        { impl.predecessor(key) } -> std::same_as<ordered::internal::LocalQueryResult>;
+        { impl.successor(key) } -> std::same_as<ordered::internal::LocalQueryResult>;
     }
     && requires(T& impl, typename T::Key const key, typename T::Value& out_value) {
         { impl.erase(key, out_value) } -> std::same_as<bool>;

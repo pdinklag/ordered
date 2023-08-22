@@ -1,6 +1,6 @@
 /**
- * btree/internal/pos_result.hpp
- * part of pdinklag/btree
+ * ordered/btree.hpp
+ * part of pdinklag/ordered
  * 
  * MIT License
  * 
@@ -25,38 +25,10 @@
  * SOFTWARE.
  */
 
-#ifndef _BTREE_INTERNAL_POS_RESULT_HPP
-#define _BTREE_INTERNAL_POS_RESULT_HPP
+#ifndef _ORDERED_BTREE_HPP
+#define _ORDERED_BTREE_HPP
 
-#include <cstddef>
-
-namespace btree::internal {
-
-/**
- * \brief The result of a node-local predecessor or successor search
- */
-struct PosResult {
-    /**
-     * \brief Produces a negative query result
-     * 
-     * \return a negative query result 
-     */
-    inline static PosResult none() { return { false, 0 }; }
-
-    /**
-     * \brief Tells whether or not the predecessor or successor exists
-     */
-    bool exists;
-
-    /**
-     * \brief The position of the predecessor or successor if it exists, undefined otherwise
-     */
-    size_t pos;
-
-    inline operator bool() const { return exists; }
-    inline operator size_t() const { return pos; }
-};
-
-}
+#include "btree/set.hpp"
+#include "btree/map.hpp"
 
 #endif
