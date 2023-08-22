@@ -61,7 +61,7 @@ You can then link against the `ordered` interface library, which will automatica
 
 ### QueryResult
 
-Queries such as *find*, *predecessor* and *successor* return an instance of the `ordered:QueryResult<Key, Value>` struct.
+The queries *find*, *min*, *max*, *predecessor* and *successor* return an instance of the `ordered:QueryResult<Key, Value>` struct.
 
 First, it contains the flag `exists` telling whether a result was found for the query key at all. Casting query results to `bool` will also return the `exists` flag. Second, it contains the `key` field that will hold the corresponding key, e.g., the predecessor of the query key. Last, the `value` field will hold the value associated to `key`, if any. In case you are using sets as opposed to maps, the `value` will be a meaningless dummy that you may ignore.
 
@@ -107,8 +107,10 @@ CHECK(erased);
 CHECK(tree.size() == 5);
 
 // minimum and maximum
-CHECK(tree.min() == -5);
-CHECK(tree.max() == 12);
+CHECK(tree.min_key() == -5);
+CHECK(tree.max_key() == 12);
+{ auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); }
+{ auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); }
 
 // membership queries
 CHECK(tree.contains(-5));
@@ -166,8 +168,10 @@ CHECK(erased);
 CHECK(tree.size() == 5);
 
 // minimum and maximum
-CHECK(tree.min() == -5);
-CHECK(tree.max() == 12);
+CHECK(tree.min_key() == -5);
+CHECK(tree.max_key() == 12);
+{ auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
+{ auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
 
 // membership queries
 CHECK(tree.contains(-5));

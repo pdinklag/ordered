@@ -53,8 +53,10 @@ TEST_SUITE("ordered") {
         CHECK(tree.size() == 5);
 
         // minimum and maximum
-        CHECK(tree.min() == -5);
-        CHECK(tree.max() == 12);
+        CHECK(tree.min_key() == -5);
+        CHECK(tree.max_key() == 12);
+        { auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); }
+        { auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); }
 
         // membership queries
         CHECK(tree.contains(-5));
@@ -102,8 +104,10 @@ TEST_SUITE("ordered") {
         CHECK(tree.size() == 5);
 
         // minimum and maximum
-        CHECK(tree.min() == -5);
-        CHECK(tree.max() == 12);
+        CHECK(tree.min_key() == -5);
+        CHECK(tree.max_key() == 12);
+        { auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
+        { auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
 
         // membership queries
         CHECK(tree.contains(-5));

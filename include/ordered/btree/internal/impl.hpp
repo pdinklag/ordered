@@ -453,6 +453,22 @@ private:
     size_t size_;
     Node* root_;
 
+    Node const& leftmost_leaf() const {
+        Node* node = root_;
+        while(!node->is_leaf()) {
+            node = node->children_[0];
+        }
+        return *node;
+    }
+
+    Node const& rightmost_leaf() const {
+        Node* node = root_;
+        while(!node->is_leaf()) {
+            node = node->children_[node->num_children_ - 1];
+        }
+        return *node;
+    }
+
 public:
     /**
      * \brief Constructs an empty B-tree
@@ -591,12 +607,8 @@ public:
      * 
      * \return the minimum key contained in the B-tree
      */
-    inline Key min() const {
-        Node* node = root_;
-        while(!node->is_leaf()) {
-            node = node->children_[0];
-        }
-        return node->impl_[0];
+    inline Key min_key() const {
+        return leftmost_leaf().impl_[0];
     }
 
     /**
@@ -606,12 +618,34 @@ public:
      * 
      * \return the maximum key contained in the B-tree
      */
-    inline Key max() const {
-        Node* node = root_;
-        while(!node->is_leaf()) {
-            node = node->children_[node->num_children_ - 1];
-        }
-        return node->impl_[node->size() - 1];
+    inline Key max_key() const {
+        auto const& rightmost = rightmost_leaf();
+        return rightmost.impl_[rightmost.size() - 1];
+    }
+
+    /**
+     * \brief Reports the minimum key contained in the B-tree and the associated value, if any
+     * 
+     * \return the minimum contained in the B-tree
+     */
+    inline QueryResult<Key, Value> min() const {
+        if(size() == 0) [[unlikely]] return QueryResult<Key, Value>::none();
+
+        auto const& leftmost = leftmost_leaf();
+        return { true, leftmost.impl_[0], leftmost.impl_.value(0) };
+    }
+
+    /**
+     * \brief Reports the minimum key contained in the B-tree and the associated value, if any
+     *
+     * \return the maximum contained in the B-tree
+     */
+    inline QueryResult<Key, Value> max() const {
+        if(size() == 0) [[unlikely]] return QueryResult<Key, Value>::none();
+
+        auto const& rightmost = rightmost_leaf();
+        auto const i = rightmost.size() - 1;
+        return { true, rightmost.impl_[i], rightmost.impl_.value(i) };
     }
 
     /**
