@@ -147,12 +147,12 @@ TEST_SUITE("ordered") {
     }
 
     TEST_CASE("range_marking::Set") {
-        ordered::range_marking::Set<unsigned int> set(16);
+        ordered::range_marking::Set<unsigned int> set(15);
         test_set(set);
     }
 
     TEST_CASE("range_marking::Map") {
-        ordered::range_marking::Map<unsigned int, unsigned int> map(16);
+        ordered::range_marking::Map<unsigned int, unsigned int> map(15);
         test_map(map);
     }
 }

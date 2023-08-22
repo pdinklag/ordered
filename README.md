@@ -109,8 +109,8 @@ The following excerpt from the tests should tell you all you need to know about 
 
 // start with an empty set
 ordered::btree::Set<int> set;
-// alternatively, using a range size of 64 and maximum key 16
-// ordered::range_marking::Set<unsigned int> set(16);
+// alternatively, using maximum possible key 15
+// ordered::range_marking::Set<unsigned int> set(15);
 
 CHECK(set.empty());
 
@@ -171,8 +171,8 @@ The following excerpt from the tests should tell you all you need to know about 
 ```cpp
 // start with an empty map
 ordered::Map<int, int> map;
-// alternatively, using a range size of 64 and maximum key 16
-// ordered::range_marking::Map<unsigned int, unsigned int> map(16);
+// alternatively, using maximum possible key 15
+// ordered::range_marking::Map<unsigned int, unsigned int> map(15);
 
 CHECK(map.empty());
 
