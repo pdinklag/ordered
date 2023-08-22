@@ -29,110 +29,131 @@
 #include "doctest.h"
 
 #include <ordered/btree.hpp>
+#include <ordered/range_marking.hpp>
 
 namespace ordered::test {
 
+template<typename Set>
+void test_set(Set& set) {
+    // start with an empty set
+    CHECK(set.empty());
+
+    // insert some numbers
+    set.insert(5);
+    set.insert(1);
+    set.insert(8);
+    set.insert(4);
+    set.insert(12);
+    set.insert(9);
+    CHECK(set.size() == 6);
+
+    // erase a number
+    bool const erased = set.erase(8);
+    CHECK(erased);
+    CHECK(set.size() == 5);
+
+    // minimum and maximum
+    CHECK(set.min_key() == 1);
+    CHECK(set.max_key() == 12);
+    { auto const r = set.min(); CHECK(r.exists); CHECK(r.key == 1); }
+    { auto const r = set.max(); CHECK(r.exists); CHECK(r.key == 12); }
+
+    // membership queries
+    CHECK(set.contains(1));
+    CHECK(set.contains(5));
+    CHECK(set.contains(12));
+
+    CHECK(!set.contains(0));
+    CHECK(!set.contains(8)); // erased
+    CHECK(!set.contains(13));
+
+    // alternative membership queries
+    { auto const r = set.find(1); CHECK(r.exists); CHECK(r.key == 1); }
+    { auto const r = set.find(0); CHECK(!r.exists); }
+
+    // predecessor queries
+    { auto const r = set.predecessor(0); CHECK(!r.exists); }
+    { auto const r = set.predecessor(1); CHECK(r.exists); CHECK(r.key == 1); }
+    { auto const r = set.predecessor(2);  CHECK(r.exists); CHECK(r.key == 1); }
+    { auto const r = set.predecessor(13); CHECK(r.exists); CHECK(r.key == 12); }
+
+    // successor queries
+    { auto const r = set.successor(0); CHECK(r.exists); CHECK(r.key == 1); }
+    { auto const r = set.successor(1); CHECK(r.exists); CHECK(r.key == 1); }
+    { auto const r = set.successor(2);  CHECK(r.exists); CHECK(r.key == 4); }
+    { auto const r = set.successor(13); CHECK(!r.exists); }
+}
+
+template<typename Map>
+void test_map(Map& map) {
+    // start with an empty map
+    CHECK(map.empty());
+
+    // insert some numbers with associated values
+    map.insert(5, 500);
+    map.insert(1, 100);
+    map.insert(8, 800);
+    map.insert(4, 400);
+    map.insert(12, 1200);
+    map.insert(9, 900);
+    CHECK(map.size() == 6);
+
+    // erase a number
+    bool const erased = map.erase(8);
+    CHECK(erased);
+    CHECK(map.size() == 5);
+
+    // minimum and maximum
+    CHECK(map.min_key() == 1);
+    CHECK(map.max_key() == 12);
+    { auto const r = map.min(); CHECK(r.exists); CHECK(r.key == 1);  CHECK(r.value == 100); }
+    { auto const r = map.max(); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
+
+    // membership queries
+    CHECK(map.contains(1));
+    CHECK(map.contains(5));
+    CHECK(map.contains(12));
+
+    CHECK(!map.contains(0));
+    CHECK(!map.contains(3));
+    CHECK(!map.contains(13));
+
+    // alternative membership queries / lookup
+    { auto const r = map.find(1); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+    { auto const r = map.find(0); CHECK(!r.exists); }
+
+    // predecessor queries
+    { auto const r = map.predecessor(0); CHECK(!r.exists); }
+    { auto const r = map.predecessor(1); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+    { auto const r = map.predecessor(2);  CHECK(r.exists); CHECK(r.key == 1);  CHECK(r.value == 100); }
+    { auto const r = map.predecessor(13); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
+
+    // successor queries
+    { auto const r = map.successor(0); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+    { auto const r = map.successor(1); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+    { auto const r = map.successor(2);  CHECK(r.exists); CHECK(r.key == 4);  CHECK(r.value == 400); }
+    { auto const r = map.successor(13); CHECK(!r.exists); }
+}
+
 TEST_SUITE("ordered") {
     TEST_CASE("btree::Set") {
-        // initialize an empty tree
-        btree::Set<int> tree;
-        CHECK(tree.empty());
-
-        // insert some numbers
-        tree.insert(5);
-        tree.insert(1);
-        tree.insert(8);
-        tree.insert(4);
-        tree.insert(12);
-        tree.insert(-5);
-        CHECK(tree.size() == 6);
-
-        // erase a number
-        bool const erased = tree.erase(8);
-        CHECK(erased);
-        CHECK(tree.size() == 5);
-
-        // minimum and maximum
-        CHECK(tree.min_key() == -5);
-        CHECK(tree.max_key() == 12);
-        { auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); }
-        { auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); }
-
-        // membership queries
-        CHECK(tree.contains(-5));
-        CHECK(tree.contains(1));
-        CHECK(tree.contains(12));
-
-        CHECK(!tree.contains(0));
-        CHECK(!tree.contains(3));
-        CHECK(!tree.contains(13));
-
-        // alternative membership queries
-        { auto const r = tree.find(-5); CHECK(r.exists); CHECK(r.key == -5); }
-        { auto const r = tree.find(0); CHECK(!r.exists); }
-
-        // predecessor queries
-        { auto const r = tree.predecessor(-6); CHECK(!r.exists); }
-        { auto const r = tree.predecessor(-5); CHECK(r.exists); CHECK(r.key == -5); }
-        { auto const r = tree.predecessor(3);  CHECK(r.exists); CHECK(r.key == 1); }
-        { auto const r = tree.predecessor(99); CHECK(r.exists); CHECK(r.key == 12); }
-
-        // successor queries
-        { auto const r = tree.successor(-5); CHECK(r.exists); CHECK(r.key == -5); }
-        { auto const r = tree.successor(-6); CHECK(r.exists); CHECK(r.key == -5); }
-        { auto const r = tree.successor(3);  CHECK(r.exists); CHECK(r.key == 4); }
-        { auto const r = tree.successor(99); CHECK(!r.exists); }
+        ordered::btree::Set<int> set;
+        test_set(set);
     }
 
-    TEST_CASE("map") {
-        // initialize an empty associative tree
-        btree::Map<int, int> tree;
-        CHECK(tree.empty());
+    TEST_CASE("btree::Map") {
+        ordered::btree::Map<int, int> map;
+        test_map(map);
+    }
 
-        // insert some numbers with associated values
-        tree.insert(5, 500);
-        tree.insert(1, 100);
-        tree.insert(8, 800);
-        tree.insert(4, 400);
-        tree.insert(12, 1200);
-        tree.insert(-5, -500);
-        CHECK(tree.size() == 6);
+    TEST_CASE("range_marking::Set") {
+        ordered::range_marking::Set<unsigned int> set(16);
+        test_set(set);
+    }
 
-        // erase a number
-        bool const erased = tree.erase(8);
-        CHECK(erased);
-        CHECK(tree.size() == 5);
-
-        // minimum and maximum
-        CHECK(tree.min_key() == -5);
-        CHECK(tree.max_key() == 12);
-        { auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-        { auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
-
-        // membership queries
-        CHECK(tree.contains(-5));
-        CHECK(tree.contains(1));
-        CHECK(tree.contains(12));
-
-        CHECK(!tree.contains(0));
-        CHECK(!tree.contains(3));
-        CHECK(!tree.contains(13));
-
-        // alternative membership queries / lookup
-        { auto const r = tree.find(-5); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-        { auto const r = tree.find(0); CHECK(!r.exists); }
-
-        // predecessor queries
-        { auto const r = tree.predecessor(-6); CHECK(!r.exists); }
-        { auto const r = tree.predecessor(-5); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-        { auto const r = tree.predecessor(3);  CHECK(r.exists); CHECK(r.key == 1);  CHECK(r.value == 100); }
-        { auto const r = tree.predecessor(99); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
-
-        // successor queries
-        { auto const r = tree.successor(-5); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-        { auto const r = tree.successor(-6); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-        { auto const r = tree.successor(3);  CHECK(r.exists); CHECK(r.key == 4);  CHECK(r.value == 400); }
-        { auto const r = tree.successor(99); CHECK(!r.exists); }
+    TEST_CASE("range_marking::Map") {
+        ordered::range_marking::Map<unsigned int, unsigned int> map(16);
+        test_map(map);
     }
 }
 

@@ -47,6 +47,32 @@ make test
 
 The tests are extremely simple. The benchmark of the paper [Engineering Predecessor Data Structures for Dynamic Integer Sets](https://arxiv.org/abs/2104.06740), where the outputs of all experiments have been verified for correctness, were the actual tests.
 
+## Data Structures
+
+The data structures come as ordereds set as well as ordered maps (associative B-tree). They only supports unique keys; duplicate insertions of the same key lead to undefined behaviour.
+
+### B-trees
+
+The provided B-trees use no sophisticated tricks or magic. Let *B* be the degree of the nodes in the B-tree. The implementation supports insertion and removal operations, as well as minimum, maximum, membership, predecessor and successor queries in base-*B* logarithmic time in the number of contained keys plus node-level scans.
+
+The implementation is very simple, almost naïve: the maintenance of the B-tree structure is implemented according to Gonazlo Navarro's book [Compact Data Structures](https://users.dcc.uchile.cl/~gnavarro/CDSbook/). The data structure for nodes is a simple array of keys which are maintained in ascending order using simple linear-time queries and manipulation. Since nodes are kept small (think a B-tree of degree 65, storing up to 64 keys at each node), thanks to caching, this is extremely fast on modern hardware and can easily outperform much more sophisticated approaches (such as fusion or burst) in the general case. Despite the simple algorithms, the code has been engineered such that it is competitive with other data structures across the board. Because B-trees are cardinality-reducing, their memory consumption depends only on the contained number of keys and not the size of the universe these keys are drawn from.
+
+### Range Marking
+
+The range-marking data structure (called *Dynamic Universe Sampling* in the paper) takes as a parameter the size *u* of the universe of keys (i.e., the maximum key is *u-1*), as well as a sampling parameter *s* (a power of two, set to 4096 by default). It paritions in the interval *[0, u)* of keys into buckets of size *s*. Operations and queries on a key are delegated to the corresponding bucket.
+
+Only active (non-empty) buckets are actually allocated. If queries must find a bucket (e.g., a succeeding bucket for successor search), this is done using linear scans and thus takes time *O(u/s)*.
+
+The buckets are maintained as bit vectors of length *s*. This means that inserting or removing keys is done in constant time by simply setting or clearing a bit, respectively. Queries are implemented as linear scans over the (word-packed) bits, taking time *O(s/w+w)* if *w* is the word size (e.g., 64 bits).
+
+The algorithms behind this data structure are very straightforward. The memory consumption directly depends on the universe size *u*. Keys must be unsigned integrals. Attempts to insert, remove or query keys greater than *u-1* is undefined.
+
+### Which to use?
+
+The range-marking data structure is typically much faster than B-trees thanks to their simple structure and few indirections. If you can model your keys as unsigned integrals and their range is reasonably restricted, it should be the data structure of choice in most cases.
+
+For all other cases, B-trees are a suitable solution for the general case.
+
 ## Usage
 
 The library is header only, so all you need to do is make sure it's in your include path.
@@ -67,19 +93,11 @@ First, it contains the flag `exists` telling whether a result was found for the 
 
 If `exists` is `false`, the contents of `key` and `value` are undefined.
 
-### B-trees
+### Ordered Sets
 
-This is an implementation of plain old B-trees with no tricks or magic. Let *B* be the degree of the nodes in the B-tree. The implementation supports insertion and removal operations, as well as minimum, maximum, membership, predecessor and successor queries in base-*B* logarithmic time in the number of contained keys plus node-level scans.
+The aliases `ordered::btree::Set<Key>` and `ordered::range_marking::Set<Key>` give you the classic ordered set experience for keys of type `Key`. For range-marking, `Key` must be an unsigned integral type, for B-trees it must satisfy `std::totally_ordered`.
 
-The implementation is very simple, almost naïve: the maintenance of the B-tree structure is implemented according to Gonazlo Navarro's book [Compact Data Structures](https://users.dcc.uchile.cl/~gnavarro/CDSbook/). The data structure for nodes is a simple array of keys which are maintained in ascending order using simple linear-time queries and manipulation. Since nodes are kept small (think a B-tree of degree 65, storing up to 64 keys at each node), thanks to caching, this is extremely fast on modern hardware and can easily outperform much more sophisticated approaches (such as fusion or burst) in the general case. Despite the simple algorithms, the code has been engineered such that it is competitive with other data structures across the board. Because B-trees are cardinality-reducing, their memory consumption depends only on the contained number of keys and not the size of the universe these keys are drawn from.
-
-The B-tree comes as an ordered set as well as an ordered map (associative B-tree). It only supports unique keys; multiple insertions of the same key leads to undefined behaviour.
-
-#### Ordered Set (classic B-tree)
-
-The alias `ordered::btree::Set<Key>` gives you the classic B-tree experience for keys of type `Key`. The only requirement for `Key` is that it must satisfy the `std::totally_ordered` concept.
-
-Note that even though no values are associated with keys here, you will get a [QueryResult](#QueryResult) when performing predecessor or successor queries. This is simply for convenience of keeping the code succinct; the `value` field in these results is not meaningful and can simply be ignored.
+Note that even though no values are associated with keys here, the [QueryResult](#QueryResult) from queries will have a `value` field. This is simply for convenience of keeping the code succinct; it is not meaningful and can simply be ignored in these cases.
 
 ##### Example
 
@@ -87,115 +105,120 @@ The following excerpt from the tests should tell you all you need to know about 
 
 ```cpp
 #include <ordered/btree.hpp>
+#include <ordered/marked.hpp>
 
-// initialize an empty tree
-ordered::btree::Set<int> tree;
-CHECK(tree.empty());
+// start with an empty set
+ordered::btree::Set<int> set;
+// alternatively, using a range size of 64 and maximum key 16
+// ordered::range_marking::Set<unsigned int> set(16);
+
+CHECK(set.empty());
 
 // insert some numbers
-tree.insert(5);
-tree.insert(1);
-tree.insert(8);
-tree.insert(4);
-tree.insert(12);
-tree.insert(-5);
-CHECK(tree.size() == 6);
+set.insert(5);
+set.insert(1);
+set.insert(8);
+set.insert(4);
+set.insert(12);
+set.insert(9);
+CHECK(set.size() == 6);
 
 // erase a number
-bool const erased = tree.erase(8);
+bool const erased = set.erase(8);
 CHECK(erased);
-CHECK(tree.size() == 5);
+CHECK(set.size() == 5);
 
 // minimum and maximum
-CHECK(tree.min_key() == -5);
-CHECK(tree.max_key() == 12);
-{ auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); }
-{ auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); }
+CHECK(set.min_key() == 1);
+CHECK(set.max_key() == 12);
+{ auto const r = set.min(); CHECK(r.exists); CHECK(r.key == 1); }
+{ auto const r = set.max(); CHECK(r.exists); CHECK(r.key == 12); }
 
 // membership queries
-CHECK(tree.contains(-5));
-CHECK(tree.contains(1));
-CHECK(tree.contains(12));
+CHECK(set.contains(1));
+CHECK(set.contains(5));
+CHECK(set.contains(12));
 
-CHECK(!tree.contains(0));
-CHECK(!tree.contains(3));
-CHECK(!tree.contains(13));
+CHECK(!set.contains(0));
+CHECK(!set.contains(8)); // erased
+CHECK(!set.contains(13));
 
 // alternative membership queries
-{ auto const r = tree.find(-5); CHECK(r.exists); CHECK(r.key == -5); }
-{ auto const r = tree.find(0); CHECK(!r.exists); }
+{ auto const r = set.find(1); CHECK(r.exists); CHECK(r.key == 1); }
+{ auto const r = set.find(0); CHECK(!r.exists); }
 
 // predecessor queries
-{ auto const r = tree.predecessor(-6); CHECK(!r.exists); }
-{ auto const r = tree.predecessor(-5); CHECK(r.exists); CHECK(r.key == -5); }
-{ auto const r = tree.predecessor(3);  CHECK(r.exists); CHECK(r.key == 1); }
-{ auto const r = tree.predecessor(99); CHECK(r.exists); CHECK(r.key == 12); }
+{ auto const r = set.predecessor(0); CHECK(!r.exists); }
+{ auto const r = set.predecessor(1); CHECK(r.exists); CHECK(r.key == 1); }
+{ auto const r = set.predecessor(2);  CHECK(r.exists); CHECK(r.key == 1); }
+{ auto const r = set.predecessor(13); CHECK(r.exists); CHECK(r.key == 12); }
 
 // successor queries
-{ auto const r = tree.successor(-5); CHECK(r.exists); CHECK(r.key == -5); }
-{ auto const r = tree.successor(-6); CHECK(r.exists); CHECK(r.key == -5); }
-{ auto const r = tree.successor(3);  CHECK(r.exists); CHECK(r.key == 4); }
-{ auto const r = tree.successor(99); CHECK(!r.exists); }
+{ auto const r = set.successor(0); CHECK(r.exists); CHECK(r.key == 1); }
+{ auto const r = set.successor(1); CHECK(r.exists); CHECK(r.key == 1); }
+{ auto const r = set.successor(2);  CHECK(r.exists); CHECK(r.key == 4); }
+{ auto const r = set.successor(13); CHECK(!r.exists); }
 ```
 
-#### Ordered Map (associative B-tree)
+### Ordered Maps
 
-The associative variant `ordered::btree::Map` works just like `ordered::btree::Set`, except you associate values to each key upon insertion and the [QueryResult](#QueryResult) returned by predecessor and successor queries also contain the corresponding value. This is particularly useful when using `find`, which can be used to lookup the value associated to a key.
+The associative variants `ordered::btree::Map` and `ordered::range_marking::Map` work just like the set counterparts, except you associate values to each key upon insertion and the [QueryResult](#QueryResult) returned by queries also contain the corresponding value.
 
 ##### Example
 
 The following excerpt from the tests should tell you all you need to know about the usage.
 
 ```cpp
-#include <ordered/btree.hpp>
+// start with an empty map
+ordered::Map<int, int> map;
+// alternatively, using a range size of 64 and maximum key 16
+// ordered::range_marking::Map<unsigned int, unsigned int> map(16);
 
-// initialize an empty associative tree
-ordered::btree::Map<int, int> tree;
-CHECK(tree.empty());
+CHECK(map.empty());
 
 // insert some numbers with associated values
-tree.insert(5, 500);
-tree.insert(1, 100);
-tree.insert(8, 800);
-tree.insert(4, 400);
-tree.insert(12, 1200);
-tree.insert(-5, -500);
-CHECK(tree.size() == 6);
+map.insert(5, 500);
+map.insert(1, 100);
+map.insert(8, 800);
+map.insert(4, 400);
+map.insert(12, 1200);
+map.insert(9, 900);
+CHECK(map.size() == 6);
 
 // erase a number
-bool const erased = tree.erase(8);
+bool const erased = map.erase(8);
 CHECK(erased);
-CHECK(tree.size() == 5);
+CHECK(map.size() == 5);
 
 // minimum and maximum
-CHECK(tree.min_key() == -5);
-CHECK(tree.max_key() == 12);
-{ auto const r = tree.min(); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-{ auto const r = tree.max(); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
+CHECK(map.min_key() == 1);
+CHECK(map.max_key() == 12);
+{ auto const r = map.min(); CHECK(r.exists); CHECK(r.key == 1);  CHECK(r.value == 100); }
+{ auto const r = map.max(); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
 
 // membership queries
-CHECK(tree.contains(-5));
-CHECK(tree.contains(1));
-CHECK(tree.contains(12));
+CHECK(map.contains(1));
+CHECK(map.contains(5));
+CHECK(map.contains(12));
 
-CHECK(!tree.contains(0));
-CHECK(!tree.contains(3));
-CHECK(!tree.contains(13));
+CHECK(!map.contains(0));
+CHECK(!map.contains(3));
+CHECK(!map.contains(13));
 
 // alternative membership queries / lookup
-{ auto const r = tree.find(-5); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-{ auto const r = tree.find(0); CHECK(!r.exists); }
+{ auto const r = map.find(1); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+{ auto const r = map.find(0); CHECK(!r.exists); }
 
 // predecessor queries
-{ auto const r = tree.predecessor(-6); CHECK(!r.exists); }
-{ auto const r = tree.predecessor(-5); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-{ auto const r = tree.predecessor(3);  CHECK(r.exists); CHECK(r.key == 1);  CHECK(r.value == 100); }
-{ auto const r = tree.predecessor(99); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
+{ auto const r = map.predecessor(0); CHECK(!r.exists); }
+{ auto const r = map.predecessor(1); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+{ auto const r = map.predecessor(2);  CHECK(r.exists); CHECK(r.key == 1);  CHECK(r.value == 100); }
+{ auto const r = map.predecessor(13); CHECK(r.exists); CHECK(r.key == 12); CHECK(r.value == 1200); }
 
 // successor queries
-{ auto const r = tree.successor(-5); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-{ auto const r = tree.successor(-6); CHECK(r.exists); CHECK(r.key == -5); CHECK(r.value == -500); }
-{ auto const r = tree.successor(3);  CHECK(r.exists); CHECK(r.key == 4);  CHECK(r.value == 400); }
-{ auto const r = tree.successor(99); CHECK(!r.exists); }
+{ auto const r = map.successor(0); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+{ auto const r = map.successor(1); CHECK(r.exists); CHECK(r.key == 1); CHECK(r.value == 100); }
+{ auto const r = map.successor(2);  CHECK(r.exists); CHECK(r.key == 4);  CHECK(r.value == 400); }
+{ auto const r = map.successor(13); CHECK(!r.exists); }
 ```
 

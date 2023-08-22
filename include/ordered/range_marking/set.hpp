@@ -1,5 +1,5 @@
 /**
- * ordered/btree/set.hpp
+ * ordered/range_marking/set.hpp
  * part of pdinklag/ordered
  * 
  * MIT License
@@ -25,24 +25,16 @@
  * SOFTWARE.
  */
 
-#ifndef _ORDERED_BTREE_SET_HPP
-#define _ORDERED_BTREE_SET_HPP
+#ifndef _ORDERED_RANGE_MARKING_SET_HPP
+#define _ORDERED_RANGE_MARKING_SET_HPP
 
-#include "internal/btree_impl.hpp"
-#include "internal/linear_search_set.hpp"
+#include "internal/marked_impl.hpp"
+#include "internal/bucket_set.hpp"
 
-namespace ordered::btree {
+namespace ordered::range_marking {
 
-/**
- * \brief A B-tree
- * 
- * The degree must be an odd number.
- * 
- * \tparam Key the key type
- * \tparam degree the B-tree node degree
- */
-template<std::totally_ordered Key, size_t degree = 65>
-using Set = internal::BTree<internal::LinearSearchSet<Key, degree - 1>>;
+template<std::unsigned_integral Key, size_t sampling = 4096>
+using Set = internal::RangeMarker<internal::BucketSet<Key, sampling>>;
 
 }
 

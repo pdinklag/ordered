@@ -1,5 +1,5 @@
 /**
- * ordered/btree/internal/concepts.hpp
+ * ordered/range_marking/concepts.hpp
  * part of pdinklag/ordered
  * 
  * MIT License
@@ -25,52 +25,49 @@
  * SOFTWARE.
  */
 
-#ifndef _ORDERED_BTREE_INTERNAL_CONCEPTS_HPP
-#define _ORDERED_BTREE_INTERNAL_CONCEPTS_HPP
+#ifndef _ORDERED_RANGE_MARKING_CONCEPTS_HPP
+#define _ORDERED_RANGE_MARKING_CONCEPTS_HPP
 
 #include <concepts>
+#include <limits>
 
 #include "../../internal/local_query_result.hpp"
 
-namespace ordered::btree::internal {
+namespace ordered::range_marking::internal {
 
-/**
- * \brief Concept for types that provide a B-Tree node implementation
- * 
- * In addition to satisfying the concept syntactically, the keys returned by `operator[]` must respect the total order of the keys,
- * e.g., `impl[i] < impl[j]` must hold for `i < j`.
- * 
- * \tparam T the type in question
- */
 template<typename T>
-concept BTreeNode =
+concept RangeMarkBucket =
     requires {
-        typename T::Key;
+        typename T::Index;
         typename T::Value;
         { T::capacity() } -> std::unsigned_integral;
     }
-    && std::totally_ordered<typename T::Key>
+    && std::unsigned_integral<typename T::Key>
+    && std::unsigned_integral<typename T::Index>
+    && std::numeric_limits<typename T::Index>::digits <= std::numeric_limits<typename T::Key>::digits
+    && requires(typename T::Key const key) {
+        { T::to_index(key) } -> std::same_as<typename T::Index>;
+    }
     && requires(T const& impl) {
         { impl.size() } -> std::unsigned_integral;
     }
-    && requires(T& impl, typename T::Key const key) {
-        { impl.erase(key) } -> std::same_as<bool>;
+    && requires(T& bucket, typename T::Index const index) {
+        { bucket.erase(index) } -> std::same_as<bool>;
     }
-    && requires(T const& impl, typename T::Key const key) {
-        { impl.predecessor(key) } -> std::same_as<ordered::internal::LocalQueryResult>;
-        { impl.successor(key) } -> std::same_as<ordered::internal::LocalQueryResult>;
+    && requires(T const& bucket) {
+        { bucket.min() } -> std::same_as<typename T::Index>;
+        { bucket.max() } -> std::same_as<typename T::Index>;
     }
-    && requires(T& impl, typename T::Key const key, typename T::Value& out_value) {
-        { impl.erase(key, out_value) } -> std::same_as<bool>;
+    && requires(T const& bucket, typename T::Index const x) {
+        { bucket.predecessor(x) } -> std::same_as<ordered::internal::LocalQueryResult>;
+        { bucket.successor(x) } -> std::same_as<ordered::internal::LocalQueryResult>;
     }
-    && requires(T& impl, typename T::Key const key, typename T::Value value) {
-        { impl.insert(key, value) };
+    && requires(T& bucket, typename T::Index const x, typename T::Value value) {
+        { bucket.insert(x, value) };
     }
-    && requires(T const& impl, size_t const i) {
-        { impl[i] } -> std::same_as<typename T::Key>;
-        { impl.value(i) } -> std::same_as<typename T::Value>;
+    && requires(T const& bucket, typename T::Index const x) {
+        { bucket.value(x) } -> std::same_as<typename T::Value>;
     };
-
 }
 
 #endif

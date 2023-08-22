@@ -1,5 +1,5 @@
 /**
- * ordered/btree/internal/impl.hpp
+ * ordered/btree/internal/btree_impl.hpp
  * part of pdinklag/ordered
  * 
  * MIT License
@@ -43,7 +43,7 @@ namespace ordered::btree::internal {
  * 
  * \tparam NodeImpl the node implementation
  */
-template<internal::NodeImplementation NodeImpl>
+template<BTreeNode NodeImpl>
 class BTree {
 private:
     using Key = typename NodeImpl::Key;
@@ -75,17 +75,6 @@ private:
         ChildCount num_children() const { return num_children_; }
         Node const* child(size_t const i) { return children_[i]; }
 
-        size_t memory_size() const {
-            size_t mem = sizeof(Node);
-            if(children_) {
-                mem += degree_ * sizeof(Node*);
-                for(size_t i = 0; i < num_children_; i++) {
-                    mem += children_[i]->memory_size();
-                }
-            }
-            return mem;
-        }
-        
     private:
         inline bool is_empty() const { return size() == 0; }
         inline bool is_full() const { return size() == node_capacity; }
@@ -471,7 +460,7 @@ private:
 
 public:
     /**
-     * \brief Constructs an empty B-tree
+     * \brief Constructs an empty container
      */
     inline BTree() : size_(0), root_(new Node()) {
     }
@@ -499,7 +488,7 @@ public:
     /**
      * \brief Finds the predecessor of the given key, if any
      * 
-     * If the key is contained in the B-Tree, it will be returned as its own predecessor.
+     * If the key is contained, it will be returned as its own predecessor.
      * 
      * \param x the key in question
      * \return the query result
@@ -539,7 +528,7 @@ public:
     /**
      * \brief Finds the successor of the given key, if any
      * 
-     * If the key is contained in the B-Tree, it will be returned as its own successor.
+     * If the key is contained, it will be returned as its own successor.
      * 
      * \param x the key in question
      * \return the query result
@@ -577,7 +566,7 @@ public:
     }
 
     /**
-     * \brief Finds the given key in the B-tree
+     * \brief Finds the given key
      * 
      * \param x the key in question
      * \return the query result
@@ -589,10 +578,10 @@ public:
     }
 
     /**
-     * \brief Tests whether the given key is contained in the B-tree
+     * \brief Tests whether the given key is contained
      * 
      * \param x the key in question
-     * \return true iff the B-tree contains the key
+     * \return true iff the key is contained
      * \return false otherwise
      */
     inline bool contains(Key const x) const {
@@ -601,22 +590,22 @@ public:
     }
 
     /**
-     * \brief Reports the minimum key contained in the B-tree
+     * \brief Reports the minimum key contained
      * 
-     * Querying this on an empty B-tree results in undefined behaviour
+     * Querying this on an empty container results in undefined behaviour
      * 
-     * \return the minimum key contained in the B-tree
+     * \return the minimum key contained
      */
     inline Key min_key() const {
         return leftmost_leaf().impl_[0];
     }
 
     /**
-     * \brief Reports the maximum key contained in the B-tree
+     * \brief Reports the maximum key contained
      * 
-     * Querying this on an empty B-tree results in undefined behaviour
+     * Querying this on an empty container results in undefined behaviour
      * 
-     * \return the maximum key contained in the B-tree
+     * \return the maximum key contained
      */
     inline Key max_key() const {
         auto const& rightmost = rightmost_leaf();
@@ -624,9 +613,9 @@ public:
     }
 
     /**
-     * \brief Reports the minimum key contained in the B-tree and the associated value, if any
+     * \brief Reports the minimum key contained and the associated value, if any
      * 
-     * \return the minimum contained in the B-tree
+     * \return the minimum contained
      */
     inline QueryResult<Key, Value> min() const {
         if(size() == 0) [[unlikely]] return QueryResult<Key, Value>::none();
@@ -636,9 +625,9 @@ public:
     }
 
     /**
-     * \brief Reports the minimum key contained in the B-tree and the associated value, if any
+     * \brief Reports the minimum key contained and the associated value, if any
      *
-     * \return the maximum contained in the B-tree
+     * \return the maximum contained
      */
     inline QueryResult<Key, Value> max() const {
         if(size() == 0) [[unlikely]] return QueryResult<Key, Value>::none();
@@ -649,7 +638,7 @@ public:
     }
 
     /**
-     * \brief Inserts the given key and associated value into the B-tree
+     * \brief Inserts the given key and associated value
      * 
      * Inserting a key that is already contained results in undefined behaviour.
      * 
@@ -670,7 +659,7 @@ public:
     }
 
     /**
-     * \brief Inserts the given key into the B-tree
+     * \brief Inserts the given key
      * 
      * The associated value will is default-constructed.
      * Inserting a key that is already contained results in undefined behaviour.
@@ -682,11 +671,11 @@ public:
     }
 
     /**
-     * \brief Removes the given key from the B-tree
+     * \brief Removes the given key
      * 
      * \param key the key to remove
-     * \return true if the key was contained in the B-tree and has been removed by the operation
-     * \return false if the key was not contained in the B-tree and thus nothing was removed
+     * \return true if the key was contained and has been removed by the operation
+     * \return false if the key was not contained and thus nothing was removed
      */
     inline bool erase(Key const key) {
         assert(size_ > 0);
@@ -710,7 +699,7 @@ public:
     }
 
     /**
-     * \brief Clears the B-tree, removing all its contents
+     * \brief Clears the container
      */
     inline void clear() {
         delete root_;
@@ -719,28 +708,19 @@ public:
     }
 
     /**
-     * \brief Reports the number of keys contained in the B-tree
+     * \brief Reports the number of keys contained
      * 
-     * \return the number of keys contained in the B-tree 
+     * \return the number of keys contained 
      */
     inline size_t size() const { return size_; }
 
     /**
-     * \brief Reports whether the B-tree is empty
+     * \brief Reports whether the container is empty
      * 
-     * \return true iff the B-tree's size is zero
-     * \return false iff there are any keys contained in the B-tree
+     * \return true iff the container's size is zero
+     * \return false iff there are any keys contained
      */
     inline bool empty() const { return size_ == 0; }
-
-    /**
-     * \brief Accumulates the number of bytes the B-tree and all its nodes occupies in the RAM
-     * 
-     * This is computed recursively traversing all nodes.
-     * 
-     * \return size_t the number of bytes occupied in the RAM
-     */
-    inline size_t memory_size() const { return root_->memory_size(); }
 };
 
 }

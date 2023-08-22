@@ -1,5 +1,5 @@
 /**
- * ordered/btree/set.hpp
+ * ordered/range_marking/idiv_ceil.hpp
  * part of pdinklag/ordered
  * 
  * MIT License
@@ -25,25 +25,15 @@
  * SOFTWARE.
  */
 
-#ifndef _ORDERED_BTREE_SET_HPP
-#define _ORDERED_BTREE_SET_HPP
+#ifndef _ORDERED_RANGE_MARKING_IDIV_CEIL_HPP
+#define _ORDERED_RANGE_MARKING_IDIV_CEIL_HPP
 
-#include "internal/btree_impl.hpp"
-#include "internal/linear_search_set.hpp"
+#include <cstddef>
 
-namespace ordered::btree {
-
-/**
- * \brief A B-tree
- * 
- * The degree must be an odd number.
- * 
- * \tparam Key the key type
- * \tparam degree the B-tree node degree
- */
-template<std::totally_ordered Key, size_t degree = 65>
-using Set = internal::BTree<internal::LinearSearchSet<Key, degree - 1>>;
-
+namespace ordered::range_marking::internal {
+    static constexpr size_t idiv_ceil(size_t const a, size_t const b) {
+        return ((a + b) - size_t(1) / b);
+    }
 }
 
 #endif
