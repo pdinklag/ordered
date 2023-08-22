@@ -59,6 +59,14 @@ add_subdirectory(path/to/ordered)
 
 You can then link against the `ordered` interface library, which will automatically add the include directory to your target.
 
+### QueryResult
+
+Queries such as *find*, *predecessor* and *successor* return an instance of the `ordered:QueryResult<Key, Value>` struct.
+
+First, it contains the flag `exists` telling whether a result was found for the query key at all. Casting query results to `bool` will also return the `exists` flag. Second, it contains the `key` field that will hold the corresponding key, e.g., the predecessor of the query key. Last, the `value` field will hold the value associated to `key`, if any. In case you are using sets as opposed to maps, the `value` will be a meaningless dummy that you may ignore.
+
+If `exists` is `false`, the contents of `key` and `value` are undefined.
+
 ### B-trees
 
 This is an implementation of plain old B-trees with no tricks or magic. Let *B* be the degree of the nodes in the B-tree. The implementation supports insertion and removal operations, as well as minimum, maximum, membership, predecessor and successor queries in base-*B* logarithmic time in the number of contained keys plus node-level scans.
@@ -69,7 +77,7 @@ The B-tree comes as an ordered set as well as an ordered map (associative B-tree
 
 #### Ordered Set (classic B-tree)
 
-The alias `btree::Set<Key>` gives you the classic B-tree experience for keys of type `Key`. The only requirement for `Key` is that it must satisfy the `std::totally_ordered` concept.
+The alias `ordered::btree::Set<Key>` gives you the classic B-tree experience for keys of type `Key`. The only requirement for `Key` is that it must satisfy the `std::totally_ordered` concept.
 
 Note that even though no values are associated with keys here, you will get a [QueryResult](#QueryResult) when performing predecessor or successor queries. This is simply for convenience of keeping the code succinct; the `value` field in these results is not meaningful and can simply be ignored.
 
@@ -78,10 +86,10 @@ Note that even though no values are associated with keys here, you will get a [Q
 The following excerpt from the tests should tell you all you need to know about the usage.
 
 ```cpp
-#include <btree.hpp>
+#include <ordered/btree.hpp>
 
 // initialize an empty tree
-btree::Set<int> tree;
+ordered::btree::Set<int> tree;
 CHECK(tree.empty());
 
 // insert some numbers
@@ -130,17 +138,17 @@ CHECK(!tree.contains(13));
 
 #### Ordered Map (associative B-tree)
 
-The associative variant `btree::Map` works just like `btree::Set`, except you associate values to each key upon insertion and the [QueryResult](#QueryResult) returned by predecessor and successor queries also contain the corresponding value. This is particularly useful when using `find`, which can be used to lookup the value associated to a key.
+The associative variant `ordered::btree::Map` works just like `ordered::btree::Set`, except you associate values to each key upon insertion and the [QueryResult](#QueryResult) returned by predecessor and successor queries also contain the corresponding value. This is particularly useful when using `find`, which can be used to lookup the value associated to a key.
 
 ##### Example
 
 The following excerpt from the tests should tell you all you need to know about the usage.
 
 ```cpp
-#include <btree.hpp>
+#include <ordered/btree.hpp>
 
 // initialize an empty associative tree
-btree::Map<int, int> tree;
+ordered::btree::Map<int, int> tree;
 CHECK(tree.empty());
 
 // insert some numbers with associated values
@@ -187,10 +195,3 @@ CHECK(!tree.contains(13));
 { auto const r = tree.successor(99); CHECK(!r.exists); }
 ```
 
-### QueryResult
-
-Queries such as *find*, *predecessor* and *successor* return an instance of the `btree:QueryResult<Key, Value>` struct.
-
-First, it contains the flag `exists` telling whether a result was found for the query key at all. Casting query results to `bool` will also return the `exists` flag. Second, it contains the `key` field that will hold the corresponding key, e.g., the predecessor of the query key. Last, the `value` field will hold the value associated to `key`, if any. In case you are using `btree::Set`, the `value` will always be a meaningless dummy that you may ignore.
-
-If `exists` is `false`, the contents of `key` and `value` are undefined.
