@@ -45,9 +45,11 @@ namespace ordered::btree::internal {
  */
 template<BTreeNode NodeImpl>
 class BTree {
-private:
+public:
     using Key = typename NodeImpl::Key;
     using Value = typename NodeImpl::Value;
+
+private:
     static constexpr size_t degree_ = NodeImpl::capacity() + 1;
 
     static_assert(degree_ > 1);

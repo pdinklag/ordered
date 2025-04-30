@@ -59,12 +59,14 @@ namespace ordered::range_marking::internal {
  */
 template<RangeMarkBucket BucketImpl>
 class RangeMarker {
+public:
+    using Key = BucketImpl::Key;
+    using Value = BucketImpl::Value;
+
 private:
     static constexpr size_t sampling_ = BucketImpl::capacity();
 
-    using Key = BucketImpl::Key;
     using Index = BucketImpl::Index;
-    using Value = BucketImpl::Value;
 
     static constexpr Key to_key(Index const i, size_t const bucket_num) {
         return bucket_num * sampling_ + i;
